@@ -17,6 +17,10 @@ app.use(cors(corsOptions));
 
 initializeDatabase();
 
+app.get("/", (req, res) => {
+  res.json({ message: "this is lead management api" });
+});
+
 async function createNewAgent(newAgent) {
   try {
     const agent = new SalesAgent(newAgent);
