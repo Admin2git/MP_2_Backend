@@ -179,9 +179,15 @@ app.post("/leads", async (req, res) => {
 
 async function getAllLeads(salesAgentId) {
   try {
-    const leads = await lead
-      .find({ salesAgent: salesAgentId })
-      .populate("salesAgent");
+     let leads=[]
+    if (salesAgentId) {
+       leads = await lead
+        .find({ salesAgent: salesAgentId })
+        .populate("salesAgent");
+    } else {
+      leads = await lead.find().populate("salesAgent");
+    }
+
     return leads;
   } catch (error) {
     console.error(error);
@@ -190,11 +196,9 @@ async function getAllLeads(salesAgentId) {
 
 app.get("/leads", async (req, res) => {
   try {
-    const { salesAgent } = req.query; 
+    const { salesAgent } = req.query;
 
-    if (!salesAgent) {
-      return res.status(400).json({ error: "Sales agent ID is required." });
-    }
+   
 
     const leads = await getAllLeads(salesAgent);
     if (leads != 0) {
