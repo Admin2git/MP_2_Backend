@@ -303,7 +303,10 @@ app.post("/leads/:id/comments", async (req, res) => {
 
 async function commentByLeadId(leadId) {
   try {
-    const allComments = await comment.find({ lead: leadId });
+    const allComments = await comment
+      .find({ lead: leadId })
+      .populate("lead")
+      .populate("author");
     return allComments;
   } catch (error) {
     console.error(error);
