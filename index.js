@@ -7,6 +7,7 @@ const { initializeDatabase } = require("./db/db.connect");
 const SalesAgent = require("./models/SalesAgent");
 const lead = require("./models/lead");
 const { default: mongoose } = require("mongoose");
+const comment = require("./models/comment");
 const corsOptions = {
   origin: "*",
   credentials: true,
@@ -179,9 +180,9 @@ app.post("/leads", async (req, res) => {
 
 async function getAllLeads(salesAgentId) {
   try {
-     let leads=[]
+    let leads = [];
     if (salesAgentId) {
-       leads = await lead
+      leads = await lead
         .find({ salesAgent: salesAgentId })
         .populate("salesAgent");
     } else {
@@ -198,8 +199,6 @@ app.get("/leads", async (req, res) => {
   try {
     const { salesAgent } = req.query;
 
-   
-
     const leads = await getAllLeads(salesAgent);
     if (leads != 0) {
       res.status(201).json(leads);
@@ -208,6 +207,120 @@ app.get("/leads", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: "Failed to fatch leads." });
+  }
+});
+
+async function getLeadById(leadId) {
+  try {
+    const leadByid = await lead.findById(leadId);
+    return leadByid;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+app.get("/leads/:leadId", async (req, res) => {
+  try {
+    const leadByid = await getLeadById(req.params.leadId);
+    if (leadByid) {
+      res.status(200).json(leadByid);
+    } else {
+      res.status(404).json({ error: "No lead found." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fatch leads." });
+  }
+});
+
+async function updateLeadById(leadId, dataToUpdate) {
+  try {
+    const updatedLead = await lead.findByIdAndUpdate(leadId, dataToUpdate, {
+      new: true,
+    });
+    return updatedLead;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+app.post("/leads/:leadId", async (req, res) => {
+  try {
+    const updatedLead = await updateLeadById(req.params.leadId, req.body);
+    if (updatedLead) {
+      res.status(200).json(updatedLead);
+    } else {
+      res.status(404).json({ error: "No lead found." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fatch leads." });
+  }
+});
+
+async function deleteLeadById(leadId) {
+  try {
+    const deletedLead = await lead.findByIdAndDelete(leadId);
+    return deletedLead;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+app.delete("/leads/:leadId", async (req, res) => {
+  try {
+    const deletedLead = await deleteLeadById(req.params.leadId);
+    if (deletedLead) {
+      res.status(200).json(deletedLead);
+    } else {
+      res.status(404).json({ error: "No lead delete." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fatch leads." });
+  }
+});
+
+async function createCommentById(dataTopost) {
+  try {
+    const commentOnLead = new comment(dataTopost);
+    const saveComment = await commentOnLead.save();
+    return saveComment;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+app.post("/leads/:id/comments", async (req, res) => {
+  try {
+    const commentOnLead = await createCommentById(req.body);
+    if (commentOnLead) {
+      res.status(200).json(commentOnLead);
+    } else {
+      res.status(404).json({ error: "No comment create." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fatch comments." });
+  }
+});
+
+async function commentByLeadId(leadId) {
+  try {
+    const allComments = await comment.find({ lead: leadId });
+    return allComments;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+app.get("/leads/:id/comments", async (req, res) => {
+  try {
+    const allComments = await commentByLeadId(req.params.id);
+    if (allComments && allComments.length > 0) {
+      res.status(200).json(allComments);
+    } else {
+      console.error(error);
+      res.status(404).json({ error: "No comments found." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fatch comments." });
   }
 });
 
