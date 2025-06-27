@@ -278,9 +278,9 @@ app.delete("/leads/:leadId", async (req, res) => {
   }
 });
 
-async function createCommentById(dataTopost) {
+async function createCommentById(leadId, commentTopost) {
   try {
-    const commentOnLead = new comment(dataTopost);
+    const commentOnLead = new comment({ ...commentTopost, lead: leadId });
     const saveComment = await commentOnLead.save();
     return saveComment;
   } catch (error) {
@@ -290,7 +290,7 @@ async function createCommentById(dataTopost) {
 
 app.post("/leads/:id/comments", async (req, res) => {
   try {
-    const commentOnLead = await createCommentById(req.body);
+    const commentOnLead = await createCommentById(req.params.id, req.body);
     if (commentOnLead) {
       res.status(200).json(commentOnLead);
     } else {
@@ -315,6 +315,12 @@ async function commentByLeadId(leadId) {
 
 app.get("/leads/:id/comments", async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        error: `lead agent ID is not a valid ObjectId.`,
+      });
+    }
+
     const allComments = await commentByLeadId(req.params.id);
     if (allComments && allComments.length > 0) {
       res.status(200).json(allComments);
