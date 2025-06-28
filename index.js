@@ -90,6 +90,29 @@ app.get("/agents", async (req, res) => {
   }
 });
 
+async function deleteAgentById(agentId) {
+  try {
+    const deletedAgent = await SalesAgent.findByIdAndDelete(agentId);
+    return deletedAgent;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+app.delete("/agents/:agentId", async (req, res) => {
+  try {
+    const deletedAgent = await deleteAgentById(req.params.agentId);
+    if (deletedAgent) {
+      res.status(200).json(deletedAgent);
+    } else {
+      res.status(404).json({ error: "No agent delete." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fatch agents." });
+  }
+});
+
+
 async function createNewLead(createLead) {
   try {
     const newLead = new lead(createLead);
