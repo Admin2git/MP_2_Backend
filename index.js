@@ -217,7 +217,7 @@ async function getAllLeads({ salesAgent, status, source, priority }) {
       filterCriteria.priority = priority;
     }
 
-    console.log(filterCriteria)
+    console.log(filterCriteria);
     const leads = await lead.find(filterCriteria).populate("salesAgent");
 
     return leads;
@@ -231,7 +231,7 @@ app.get("/leads", async (req, res) => {
     const { salesAgent, status, source, priority } = req.query;
 
     const leads = await getAllLeads({ salesAgent, status, source, priority });
-    if (leads != 0) {
+    if (leads.length != 0) {
       res.status(201).json(leads);
     } else {
       res.status(404).json({ error: "No leads found." });
