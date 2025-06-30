@@ -112,7 +112,6 @@ app.delete("/agents/:agentId", async (req, res) => {
   }
 });
 
-
 async function createNewLead(createLead) {
   try {
     const newLead = new lead(createLead);
@@ -201,16 +200,25 @@ app.post("/leads", async (req, res) => {
   }
 });
 
-async function getAllLeads(salesAgentId) {
+async function getAllLeads({ salesAgent, status, source, priority }) {
   try {
-    let leads = [];
-    if (salesAgentId) {
-      leads = await lead
-        .find({ salesAgent: salesAgentId })
-        .populate("salesAgent");
-    } else {
-      leads = await lead.find().populate("salesAgent");
+    let filterCriteria = {};
+
+    if (salesAgent) {
+      filterCriteria.salesAgent = salesAgent;
     }
+    if (status) {
+      filterCriteria.status = status;
+    }
+    if (source) {
+      filterCriteria.source = source;
+    }
+    if (priority) {
+      filterCriteria.priority = priority;
+    }
+
+    console.log(filterCriteria)
+    const leads = await lead.find(filterCriteria).populate("salesAgent");
 
     return leads;
   } catch (error) {
@@ -220,9 +228,9 @@ async function getAllLeads(salesAgentId) {
 
 app.get("/leads", async (req, res) => {
   try {
-    const { salesAgent } = req.query;
+    const { salesAgent, status, source, priority } = req.query;
 
-    const leads = await getAllLeads(salesAgent);
+    const leads = await getAllLeads({ salesAgent, status, source, priority });
     if (leads != 0) {
       res.status(201).json(leads);
     } else {
