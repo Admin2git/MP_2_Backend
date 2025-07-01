@@ -6,6 +6,7 @@ const cors = require("cors");
 const { initializeDatabase } = require("./db/db.connect");
 const SalesAgent = require("./models/SalesAgent");
 const lead = require("./models/lead");
+const moment = require("moment");
 const { default: mongoose } = require("mongoose");
 const comment = require("./models/comment");
 const corsOptions = {
@@ -361,6 +362,35 @@ app.get("/leads/:id/comments", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: "Failed to fatch comments." });
+  }
+});
+
+const sevenDaysAgo = moment().subtract(7, "days").toDate();
+
+const getLeadsLastWeek = async () => {
+  try {
+    const closedLeads = await lead.find({
+      status: "Closed",
+      updatedAt: { $gte: sevenDaysAgo },
+    });
+
+    console.log(closedLeads);
+    return closedLeads;
+  } catch (error) {
+    console.error("Error fetching closed leads in the last week:", error);
+  }
+};
+
+app.get("/report/last-week", async (req, res) => {
+  try {
+    const closedLeads = await getLeadsLastWeek();
+    if (closedLeads) {
+      res.status(200).json(closedLeads);
+    } else {
+      res.status(404).json({ error: "No leads found." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fatch leads." });
   }
 });
 
